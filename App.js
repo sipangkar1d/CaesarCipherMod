@@ -1,17 +1,25 @@
 import React, { useState } from "react";
 import {
   Button,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
+  Clipboard
 } from "react-native";
+import Copy from './assets/copy.png'
 
 const App = () => {
   const [text, onChangeText] = useState("");
   const [data, setData] = useState("Silahkan pilih, Enkripsi atau Dekripsi...");
-  
+  const [copiedText, setCopiedText] = useState('')
+
+  const copyToClipboard = () => {
+    Clipboard.setString(copiedText)
+  }
   const _enkrip = () => {
     var kunci1 = [
       "1",
@@ -77,6 +85,9 @@ const App = () => {
       if (text[i] == " " || text[i] == "." || text[i] == ",") {
         temp.push(text[i]);
       }
+      else if (text[i] == "\n") {
+        temp.push("\n")
+      }
       else {
         if (i % 2 == 0) {
           temp.push(kunci1[text[i].charCodeAt() - 97])
@@ -108,8 +119,11 @@ const App = () => {
       temp.push(matriks[i][1])
     }
     setData(temp)
-    // console.log(matriks);
-    console.log(temp)
+    var x = ""
+    for (var i = 0; i < text.length; i++) {
+      x += temp[i]
+    }
+    setCopiedText(x)
   };
   const _dekrip = () => {
     var kunci1 = [
@@ -171,8 +185,13 @@ const App = () => {
 
     //step 1, membuat ciphertext menjadi array
     var temp = []
-    for (var i = 0; i < text.length; i++) {
-      temp.push(text[i])
+    for (var i = 0; i <= text.length; i++) {
+      if (text[i] == "\n") {
+        temp.push("\n")
+      }
+      else {
+        temp.push(text[i])
+      }
     }
 
     //step 2, membuat menjadi matriks dengan baris sebanyak 2 dan kolom sebanyak ciphertext/2
@@ -197,11 +216,15 @@ const App = () => {
       }
     }
 
+
     //step 4, array dari cipher text sudah tersusun sesuai aturan kunci 1 dan kunci 2, sekarang tinggan membalikkan ciphertext menjadi plaintext
     var plaintext = []
     for (var i = 0; i < temp.length; i++) {
       if (temp[i] == " " || temp[i] == "." || temp[i] == ",") {
         plaintext.push(temp[i]);
+      }
+      else if (temp[i] == "\n") {
+        plaintext.push("\n")
       }
       else {
         if (i % 2 == 0) {
@@ -209,7 +232,6 @@ const App = () => {
             if (temp[i] == kunci1[j]) {
               var res = String.fromCharCode(j + 97)
               plaintext.push(res);
-
             }
           }
         }
@@ -218,13 +240,17 @@ const App = () => {
             if (temp[i] == kunci2[j]) {
               var res = String.fromCharCode(j + 97)
               plaintext.push(res);
-
             }
           }
         }
       }
     }
     setData(plaintext)
+    var x = ""
+    for (var i = 0; i < text.length; i++) {
+      x += plaintext[i]
+    }
+    setCopiedText(x)
   };
   return (
     <View style={styles.container}>
@@ -274,7 +300,9 @@ const App = () => {
       >
         Hasil Enkripsi/Dekripsi :
       </Text>
-      
+      <TouchableOpacity style={styles.btncopy} onPress={() => copyToClipboard()}>
+        <Image source={Copy} style={{ width: 20, height: 24 }} />
+      </TouchableOpacity>
       <View style={styles.hasil}>
         <ScrollView>
           <Text style={{ padding: 5 }}>{data}</Text>
@@ -334,6 +362,14 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 56, height: 13 },
     borderWidth: 0,
     borderRadius: 5,
+  },
+  btncopy: {
+    width: 20,
+    height: 24,
+    alignSelf: 'flex-end',
+    right: 20,
+    marginBottom: -20,
+    top: -5
   },
   hasil: {
     borderWidth: 1,
